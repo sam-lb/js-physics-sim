@@ -12,10 +12,10 @@ Variables
 - accleration, velocity, position, speed, translational kinetic energy, rotational kinetic energy, gravitational potential energy, elastic potential energy, angular velocity, angular acceleration, angle, momentum, angular momentum
 
 global constants
-- G = 6.67*10^-11 m^3/(kg*s^2)
+- G = 6.67\*10^-11 m^3/(kg\*s^2)
 - g = 9.81 m/s^2
-- e = 1.60 * 10^(-19) Coul
-- k = 9*10^9 N*m^2/C^2
+- e = 1.60 \* 10^(-19) Coul
+- k = 9 \* 10^9 N\*m^2/C^2
 
 
 other stuff for later
