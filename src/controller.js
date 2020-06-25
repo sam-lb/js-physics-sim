@@ -61,11 +61,11 @@ function generateOrbs() {
 	//spring = new Spring(o4, o3, 4, 200, 0.15, true);
 	
 	rect = new Rectangle(env.xMeters/2-20, env.yMeters/2-7, 5, 8, 1, 0, createVector(0, 255, 0));
-	rect.setAngularVelocity(2);
-	rect.setVelocity(createVector(15, 15));
-	rect2 = new Rectangle(env.xMeters/2+20, env.yMeters/2-7, 13, 13, 1, 0, createVector(0, 0, 255))
-	rect2.setAngularVelocity(-5);
-	rect2.setVelocity(createVector(-15, 15));
+	rect.setAngularVelocity(random(0,3));
+	rect.setVelocity(createVector(random(10, 15), random(10, 15)));
+	rect2 = new Rectangle(env.xMeters/2+20, env.yMeters/2-7, 13, 3, 1, 0, createVector(0, 0, 255))
+	rect2.setAngularVelocity(-6,-3);
+	rect2.setVelocity(createVector(random(-15, -10), random(10, 15)));
 }
 
 function kineticEnergy() {
