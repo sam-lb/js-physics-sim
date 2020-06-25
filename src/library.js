@@ -200,13 +200,22 @@ class Environment {
     let obj1, obj2;
     for (let i=0; i<this.objects.length; i++) {
       obj1 = this.objects[i];
-      for (let j=0; j<this.objects.length; j++) {
+      for (let j=i+1; j<this.objects.length; j++) {
         obj2 = this.objects[j];
-        if (i !== j && obj1.type === "RigidBody" && obj2.type === "RigidBody") {
+        if (obj1.type === "RigidBody" && obj2.type === "RigidBody") {
           // if obj1 is not obj2
           if (this.collisionsEnabled) { obj1.handleCollision(obj2) };
 		  if (this.universalGravityEnabled) { obj1.gravitate(obj2); }
-        }
+        } else if (obj1.type === "Rectangle" && obj2.type === "Rectangle") {
+			if (obj1.collideRect(obj2)) {
+				obj1.color = createVector(255, 0, 0);
+				obj2.color = createVector(255, 0, 0);
+				noLoop();
+			} else {
+				obj1.color = createVector(0, 255, 0);
+				obj2.color = createVector(0, 255, 0);
+			}
+		}
       }
     }
   }
@@ -591,6 +600,7 @@ class Rectangle extends RigidBody {
 		this.angAcc = 0;
 		
 		this.cornerVectors();
+		this.findNormals();
 		this.calculateQuantities();
 	}
 	
@@ -632,6 +642,17 @@ class Rectangle extends RigidBody {
 	  this.vertices = [topLeft, topRight, botRight, botLeft];
   }
   
+  findNormals() {
+	  let p1, p2;
+	  this.normals = [];
+	  for (let i=0; i<this.vertices.length; i++) {
+		  p1 = this.vertices[i];
+		  p2 = this.vertices[i+1] || this.vertices[0];
+		  this.normals[i] = createVector(p2.y - p1.y, p1.x - p2.x).normalize();
+		  this.normals[this.vertices.length+i] = -this.normals[i];
+	  }
+  }
+  
   handleBoundaries() {
         if (this.centerOfMass.x > this.env.xMeters) {
           this.pos.x = 0;
@@ -647,8 +668,24 @@ class Rectangle extends RigidBody {
 		}
   }
   
+  minMax(vec) {
+	  let min = Infinity, max=-Infinity, val, localThis = this;
+	  this.vertices.forEach(function(vert) {
+		  val = p5.Vector.add(localThis.pos, vert).dot(vec);
+		  min = val < min ? val : min;
+		  max = val > max ? val : max;
+	  });
+	  return {min: min, max: max,};
+  }
+  
   collideRect(rect) {
-	  
+	  let p1, p2;
+	  let localThis = this;
+	  return this.normals.concat(rect.normals).every(function(norm) {
+		  p1 = localThis.minMax(norm);
+		  p2 = rect.minMax(norm);
+		  return (((p1.min <= p2.max) && (p1.max >= p2.min) || (p2.min >= p1.max) && (p2.max >= p1.min)));
+	  });
   }
 	
   draw() {
@@ -680,6 +717,7 @@ class Rectangle extends RigidBody {
 		this.angle += this.angVel * env.timeStep;
 		
 		this.cornerVectors();
+		this.findNormals();
 		this.calculateCenterOfMass();
 		this.handleBoundaries();
 
