@@ -40,6 +40,13 @@ def segment_segment_intersection_2(x1, y1, x2, y2, t):
     """ Return point of intersection between two segments given t value """
     return [x1 + t * (x2 - x1), y1 + t * (y2 - y1)]
 
+def line_line_intersection(x1, y1, x2, y2, x3, y3, x4, y4):
+    """ Return the intersection of ttwo infinitely extending lines, if it exists """
+    denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+    if (denom == 0): return None
+    t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom
+    return segment_segment_intersection_2(x1, y1, x2, y2, t)
+
 def normalized(vec):
     """ Return a normalized version of the vector vec. If vec is the zero vector, return the zero vector """
     if vec[0] == 0 and vec[1] == 0: return [0, 0]
@@ -69,14 +76,20 @@ class Segment:
     color: Color of segment
     """
 
-    def __init__(self, p1, p2, color=(255,0,0)):
+    def __init__(self, p1, p2, color=(0,0,0)):
         self.p1 = p1
         self.p2 = p2
         self.color = color
 
     def intersect(self, other):
         """ Return the point of intersection with the Segment "other" as a Point object, if it exists """
-        result = intersection.segment_segment_intersection(*self.p1, *self.p2, *other.p1, *other.p2)
+        result = segment_segment_intersection(*self.p1, *self.p2, *other.p1, *other.p2)
+        if result is not None: return Point(result[0], result[1])
+        return None
+
+    def extension_intersect(self, other):
+        """ Return the point of intersection if "other" and self were extended to infinite lines, if it exists """
+        result = line_line_intersection(*self.p1, *self.p2, *other.p1, *other.p2)
         if result is not None: return Point(result[0], result[1])
         return None
 
@@ -90,7 +103,7 @@ class Point:
     color: Color of point
     """
 
-    def __init__(self, x, y, color=(255,0,0)):
+    def __init__(self, x, y, color=(0,0,0)):
         self.p = [int(x),int(y)]
         self.color = color
         self.radius = 5
@@ -192,21 +205,25 @@ class OBB:
         return max_index, max_distance
 
     def intersect(self, obb):
-        """ If colliding with obb, resolve the collision and return the two resolution vectors. Otherwise, return None """
+        """ If colliding with obb, resolve the collision and return the normal and collision point. Otherwise, return None """
         result = self._find_least_penetration(obb)
         if result is None: return None
-        axis1, penetration1 = result
+        index1, penetration1 = result
 
         result = obb._find_least_penetration(self)
         if result is None: return None
-        axis2, penetration2 = result
+        index2, penetration2 = result
 
-        norm1, norm2 = self.normals[axis1], obb.normals[axis2]
-        resolve_vec1, resolve_vec2 = scaled_to_length(norm1, penetration1/2), scaled_to_length(norm2, penetration2/2)
-
+        norm1, norm2 = self.normals[index1], obb.normals[index2]
+        resolve_vec1, resolve_vec2 = scaled_to_length(norm1, penetration1), scaled_to_length(norm2, penetration2/2)
+        
         self.set_center(add_vecs(self.center, resolve_vec1))
-        obb.set_center(add_vecs(obb.center, resolve_vec2))
-        return resolve_vec1, resolve_vec2
+        #obb.set_center(add_vecs(obb.center, resolve_vec2))
+        axis1, axis2 = self.edges[index1], obb.edges[index2]
+        collision_point = axis1.extension_intersect(axis2)
+        if collision_point is None: collision_point = Point.centroid([axis1.p1, axis1.p2])
+        
+        return norm1, collision_point, axis1, axis2
 
     def rotate(self, increment):
         """ Rotate the OBB by "increment" radians """
