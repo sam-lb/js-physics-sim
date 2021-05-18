@@ -1,0 +1,17 @@
+main page
+  - selection of simulations
+
+simulations
+  - projectile motion
+      - control over all initial conditions (v0, p0)
+      - air resistance
+      - range
+      - time until land
+      - time until peak
+  - charge field
+  - spring
+  - pendulum
+
+
+every simulation has its own html and driver js file
+every simulation includes physics_lib.js and static/physics_lib.css
