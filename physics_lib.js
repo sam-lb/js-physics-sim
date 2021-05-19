@@ -43,8 +43,6 @@ class BaseSimulation {
     /* Determines the pixel to meter scale when the canvas resizes */
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
-    this.xScale = this.canvasWidth / this.pixelsPerMeter;
-    this.yScale = this.canvasHeight / this.pixelsPerMeter;
   }
 
   pause() {
@@ -62,14 +60,59 @@ class BaseSimulation {
     this.physicsObjects.push(physicsObject);
   }
 
+  transformCoordinates(point) {
+    /* Convert point in meter space to pixels */
+    return createVector(point.x * this.pixelsPerMeter, this.canvasHeight - point.y * this.pixelsPerMeter);
+  }
+
+  scaleMeterQuantity(quantity) {
+    /* Convert meter quantity to pixels  */
+    return quantity * this.pixelsPerMeter;
+  }
+
   update() {
     /* Do a single simulation step */
-    if (!paused) {
+    if (!this.paused) {
+      clear();
       for (let obj of this.physicsObjects) {
         obj.update();
       }
       this.simTime += this.timeStep;
     }
+  }
+
+}
+
+
+class PhysicsObject {
+
+  /*
+  All physics objects inherit from PhysicsObject.
+  Handles the physics of a single object (not interactions between objects, or drawing (by default))
+  */
+
+  constructor(sim, x, y, mass=1) {
+    this.sim = sim;
+    this.sim.addPhysicsObject(this);
+    this.pos = createVector(x, y);
+    this.vel = createVector(0, 0);
+    this.acc = createVector(0, 0);
+    this.mass = mass;
+    this.inverseMass = 1/this.mass;
+  }
+
+  setPosition(pos) {
+    this.pos = pos;
+  }
+
+  applyForce(force) {
+    this.acc.add(p5.Vector.mult(force, this.inverseMass));
+  }
+
+  update() {
+    this.vel.add(p5.Vector.mult(this.acc, this.sim.timeStep));
+    this.pos.add(p5.Vector.mult(this.vel, this.sim.timeStep));
+    this.acc.set(0, 0, 0);
   }
 
 }
