@@ -9,19 +9,35 @@ class ProjectileMotionSimulation extends BaseSimulation {
 		super(canvasWidth, canvasHeight, pixelsPerMeter, timeStep);
 	}
 
-	positionAtTime(initialPos, initialVel, t) {
-		/* Get the position of the an object with given initial position and initial velocity at time t */
+	reset(initialPos, initialVel) {
+		if (this.physicsObjects.length === 0) {
+			new Projectile(this, initialPos.x, initialPos.y, initialVel.copy(), 0.25, createVector(255,0,0));
+			this.reset(initialPos, initialVel);
+			return;
+		}
+
+		const projectile = this.physicsObjects[0];
+		this.resetSimulationTime();
+		this.unpause();
+		projectile.resetInitials(initialPos, initialVel);
+	}
+
+	positionAtTime(t) {
+		/* Get the position of the projectile at time t */
+		const initialPos = this.objects[0].initialPos;
+		const initialVel = this.objects[0].initialVel;
 		return createVector(initialPos.x + initialVel.x * t, initialPos.y + initialVel.y * t - 0.5 * constants.g * t * t);
 	}
 
-	peakTime(initialVel) {
-		/* Get the time where an object with the given initial velocity will be at its peak height */
+	peakTime() {
+		/* Get the time where the projectile will be at its peak height */
+		const initialVel = this.objects[0].initialVel;
 		return initialVel.y / constants.g;
 	}
 
-	peakHeight(initialPos, initialVel) {
-		/* Get the maximum height of an object with given initial position and initial velocity */
-		return this.positionAtTime(initialPos, initialVel, this.peakTime(initialPos, initialVel));
+	peakHeight() {
+		/* Get the maximum height of the projectile along its path */
+		return this.positionAtTime(this.peakTime());
 	}
 
 }
@@ -31,17 +47,28 @@ class Projectile extends PhysicsObject {
 
 	/* The object of the projectile motion simulation */
 
-	constructor(sim, x, y, radius, col, mass=1) {
+	constructor(sim, x, y, initialVel, radius, col, mass=1) {
 		super(sim, x, y, mass);
+		this.initialVel = initialVel;
+		this.setVelocity(this.initialVel);
 		this.radius = radius;
 		this.diameter = 2 * this.radius;
 		this.col = col;
-		this.setVelocity(createVector(6, 5));
 	}
 
-	lockBounds() {
-		/* Keep the projectile on screen */
-		this.pos.set(constrain(this.pos.x, this.radius, this.sim.xUnits-this.radius), constrain(this.pos.y, this.radius, this.sim.yUnits-this.radius));
+	resetInitials(initialPos, initialVel) {
+		this.initialPos = initialPos.copy();
+		this.initialVel = initialVel.copy();
+		this.setPosition(initialPos.copy());
+		this.setVelocity(initialVel.copy());
+	}
+
+	checkBounds() {
+		/* Pause simulation upon hitting the ground */
+		if (this.pos.y < this.radius) {
+			this.setPosition(createVector(this.pos.x, this.radius));
+			this.sim.pause();
+		}
 	}
 
 	draw() {
@@ -56,10 +83,26 @@ class Projectile extends PhysicsObject {
 	update() {
 		this.applyForce(createVector(0, -constants.g));
 		super.update()
-		this.lockBounds();
+		this.checkBounds();
 		this.draw();
 	}
 
+}
+
+function startSim() {
+	const xVel = parseInt(document.getElementById("initial-xvel-slider").value);
+	const yVel = parseInt(document.getElementById("initial-yvel-slider").value);
+	const initialHeight = parseInt(document.getElementById("initial-height-slider").value);
+	simulation.reset(createVector(2, initialHeight), createVector(xVel, yVel));
+}
+
+function updateSliderLabels() {
+	const xVel = document.getElementById("initial-xvel-slider").value;
+	const yVel = document.getElementById("initial-yvel-slider").value;
+	const initialHeight = document.getElementById("initial-height-slider").value;
+	document.getElementById("initial-xvel-value").innerHTML = xVel;
+	document.getElementById("initial-yvel-value").innerHTML = yVel;
+	document.getElementById("initial-height-value").innerHTML = initialHeight;
 }
 
 let simulation, projectile;
@@ -68,7 +111,9 @@ function setup() {
 	canvas.parent("canvas-div");
 	simulation = new ProjectileMotionSimulation(width, height, 50);
 	simulation.toggleGridlines();
-	projectile = new Projectile(simulation, 2, 10, 0.25, createVector(255,0,0));
+	simulation.update();
+	simulation.pause();
+	updateSliderLabels();
 }
 
 function draw() {

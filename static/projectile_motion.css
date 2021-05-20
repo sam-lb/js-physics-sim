@@ -1,0 +1,35 @@
+.main-div {
+  display: flex;
+  flex-direction: horizontal;
+}
+
+h1,h4 {
+  text-decoration: underline;
+  text-align: center;
+}
+
+#canvas-div {
+  flex-weight: 1;
+}
+
+#inner-div {
+  flex-weight: 1;
+  width: 100%;
+  height: 100vh;
+  padding: 10px;
+  overflow-y: scroll;
+}
+
+#ui-div {
+  background: #efefef;
+  border: 1px solid black;
+}
+
+#ui-main {
+  text-align: center;
+  padding-bottom: 100px;
+}
+
+#ui-header {
+  padding: 10px;
+}

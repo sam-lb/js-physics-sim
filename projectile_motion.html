@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.10.2/p5.js"></script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML"></script>
     <link rel="stylesheet" type="text/css" href="static/physics_lib.css">
+    <link rel="stylesheet" type="text/css" href="static/projectile_motion.css">
     <script src="physics_lib.js"></script>
     <script src="projectile_motion_driver.js"></script>
     <meta charset="utf-8" />
@@ -12,6 +14,61 @@
   <body>
     <div class="main-div">
       <div id="canvas-div"></div>
+      <div id="inner-div">
+        <h1>Projectile Motion Simulator</h1>
+        <h4><a href="http://sambrunacini.com/">Return home</a></h4>
+        <div id="ui-div">
+          <div id="ui-header">
+            <h3>Initial Conditions</h3>
+          </div>
+          <div id="ui-main">
+            <label for="initial-xvel-slider">\( v_{0x} =  \)</label>
+            <input type="range" id="initial-xvel-slider" min="0" max="5" value="3" step="1" oninput="updateSliderLabels();">
+            <span id="initial-xvel-value"></span>
+            <br><br>
+            <label for="initial-yvel-slider">\( v_{0y} =  \)</label>
+            <input type="range" id="initial-yvel-slider" min="0" max="5" value="3" step="1" oninput="updateSliderLabels();">
+            <span id="initial-yvel-value"></span>
+            <br><br>
+            <label for="initial-height-slider">\( p_{0y} =  \)</label>
+            <input type="range" id="initial-height-slider" min="1" max="10" value="10" step="1" oninput="updateSliderLabels();">
+            <span id="initial-height-value"></span>
+            <br><br>
+            <input type="button" class="styled-btn" value="Run simulation" onclick="startSim();">
+          </div>
+        </div>
+        <p class="description">
+          This simulation shows the path of an object in free fall under the force of gravity near the surface of earth
+          (so \( g \), the acceleration due to gravity, is equal to 9.8 meters per second). You can control the simulation
+          by entering initial conditions for the projectile (\( \vec{v_0} \), the initial velocity, and \( \vec{p_0} \), the initial position at launch).
+          By Newton's second law, \[ F=ma \implies a = F/m \]
+        </p>
+        <p class="description">
+          This applies independently in both the \( x \) and \( y \) directions. As there are no unbalanced forces in the
+          simulation in the \( x \) direction, the \( x \) component of the projectile's acceleration is zero. The only
+          component in the y direction has magnitude \( g \) and is directed downwards. So, the acceleration vector of
+          the projectile is \( \vec{a}(t)=\left(0,-g\right) \). We can integrate this vector-valued function with respect to the time
+          parameter \( t \) to obtain the projectile's velocity: \[ \vec{v}(t) = \int {\vec{a}(t)} \text{d}t \\ = \int{\left(0,-g\right)} \text{d}t
+          \\ = \left(0,-gt\right) + \vec{c_1} \]
+        </p>
+        <p class="description">
+          where \( \vec{c_1} \) is an arbitrary vector constant. We can use the initial velocity condition to solve for this constant. The
+          initial condition tells us that \( \vec{v}(0)=\vec{v_0} \). From the equation above, \( \vec{v}(0)=\left(0,0\right)+\vec{c_1} \)
+          so \( \vec{c_1} \) must be \( \vec{v_0} \) to satisfy the initial condition. We can now integrate the velocity to with respect to
+          time to get the projectile's position: \[ \vec{p}(t)=\int { \vec{v}(t) } \text{d}t \\ = \int{ \left(\left( 0,-gt \right) + \vec{v_0}\right) } \ \text{d} t
+          \\ = \left( 0, -\frac{1}{2}gt^{2} \right) + \vec{v_0}t + \vec{c_2} \]
+        </p>
+        <p class="description">
+          The second initial condition says \( \vec{p}(0)=\vec{p_0} \). Since all other terms of the integral become the zero vector at \(t=0\), the final
+          equation for the path of motion of the projectile is
+          \[ \vec{p}(t) = \left( 0, -\frac{1}{2}gt^{2} \right) + \vec{v_0}t + \vec{p_0} \]
+        </p>
+        <p class="description">
+          Or,
+          \[ \vec{p}(t) = \left( p_{0x}+v_{0x}t, p_{0y}+v_{0y}t-\frac{1}{2}gt^2 \right) \]
+        </p>
+        <p style="color:#fff;">.<br>.</p> <!-- Force padding at the bottom because I can't do CSS -->
+      </div>
     </div>
   </body>
 </html>

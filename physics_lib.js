@@ -62,12 +62,12 @@ class BaseSimulation {
 
   pause() {
     /* Pause the simulation */
-    this.paused = false;
+    this.paused = true;
   }
 
   unpause() {
     /* Pause the simulation */
-    this.paused = true;
+    this.paused = false;
   }
 
   toggleGridlines() {
@@ -148,7 +148,7 @@ class PhysicsObject {
   constructor(sim, x, y, mass=1) {
     this.sim = sim;
     this.sim.addPhysicsObject(this);
-    this.originalPosition = createVector(x, y);
+    this.initialPos = createVector(x, y);
     this.reset();
     this.mass = mass;
     this.inverseMass = 1/this.mass;
@@ -171,7 +171,7 @@ class PhysicsObject {
   }
 
   reset() {
-    this.pos = this.originalPosition.copy();
+    this.pos = this.initialPos.copy();
     this.vel = createVector(0, 0);
     this.acc = createVector(0, 0);
   }
