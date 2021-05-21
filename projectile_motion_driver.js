@@ -40,6 +40,18 @@ class ProjectileMotionSimulation extends BaseSimulation {
 		return this.positionAtTime(this.peakTime()).y;
 	}
 
+	endRange() {
+		/* Get the position of the projectile in the x direction when it hits the ground */
+		return this.positionAtTime(this.endTime()).x;
+	}
+
+	endTime() {
+		/* Get the time when the object will hit the ground */
+		const inVel = this.physicsObjects[0].initialVel.y;
+		const inPos = this.physicsObjects[0].initialPos.y;
+		return (inVel + Math.sqrt(inVel * inVel + 2 * constants.g * inPos)) / constants.g;
+	}
+
 	update() {
 		if (!this.paused) {
 			super.update();
@@ -105,6 +117,9 @@ function startSim() {
 	const yVel = parseInt(document.getElementById("initial-yvel-slider").value);
 	const initialHeight = parseInt(document.getElementById("initial-height-slider").value);
 	simulation.reset(createVector(2, initialHeight), createVector(xVel, yVel));
+
+	const minPixelsPerMeter = Math.min(width/(simulation.peakHeight()+2), height/(simulation.endRange()+2));
+	simulation.setPixelsPerMeter(minPixelsPerMeter);
 }
 
 function updateSliderLabels() {
