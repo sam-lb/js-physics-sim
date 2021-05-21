@@ -24,20 +24,31 @@ class ProjectileMotionSimulation extends BaseSimulation {
 
 	positionAtTime(t) {
 		/* Get the position of the projectile at time t */
-		const initialPos = this.objects[0].initialPos;
-		const initialVel = this.objects[0].initialVel;
+		const initialPos = this.physicsObjects[0].initialPos;
+		const initialVel = this.physicsObjects[0].initialVel;
 		return createVector(initialPos.x + initialVel.x * t, initialPos.y + initialVel.y * t - 0.5 * constants.g * t * t);
 	}
 
 	peakTime() {
 		/* Get the time where the projectile will be at its peak height */
-		const initialVel = this.objects[0].initialVel;
+		const initialVel = this.physicsObjects[0].initialVel;
 		return initialVel.y / constants.g;
 	}
 
 	peakHeight() {
 		/* Get the maximum height of the projectile along its path */
-		return this.positionAtTime(this.peakTime());
+		return this.positionAtTime(this.peakTime()).y;
+	}
+
+	update() {
+		if (!this.paused) {
+			super.update();
+
+			if (this.physicsObjects.length > 0) {
+				this.drawInfoText("Peak time: " + Math.round(this.peakTime()*100)/100, 2);
+				this.drawInfoText("Peak height: " + Math.round(this.peakHeight()*100)/100, 3);
+			}
+		}
 	}
 
 }
@@ -82,7 +93,7 @@ class Projectile extends PhysicsObject {
 
 	update() {
 		this.applyForce(createVector(0, -constants.g));
-		super.update()
+		super.update();
 		this.checkBounds();
 		this.draw();
 	}
@@ -109,7 +120,7 @@ let simulation, projectile;
 function setup() {
 	const canvas = createCanvas(windowWidth/2, windowHeight);
 	canvas.parent("canvas-div");
-	simulation = new ProjectileMotionSimulation(width, height, 50);
+	simulation = new ProjectileMotionSimulation(width, height, 25);
 	simulation.toggleGridlines();
 	simulation.update();
 	simulation.pause();

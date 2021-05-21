@@ -113,12 +113,12 @@ class BaseSimulation {
     pop();
   }
 
-  drawSimulationTime() {
+  drawInfoText(text_, n) {
     push();
     noStroke();
     fill(0);
     textSize(20);
-    text("Simulation time: " + Math.round(this.simTime*10)/10, 20, 30);
+    text(text_, 20, 30 * n);
     pop();
   }
 
@@ -131,7 +131,7 @@ class BaseSimulation {
         obj.update();
       }
       this.simTime += this.timeStep;
-      if (this.showSimTime) this.drawSimulationTime();
+      if (this.showSimTime) this.drawInfoText("Simulation time: " + Math.round(this.simTime*10)/10, 1);
     }
   }
 
