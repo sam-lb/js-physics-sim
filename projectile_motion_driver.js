@@ -59,6 +59,7 @@ class ProjectileMotionSimulation extends BaseSimulation {
 			if (this.physicsObjects.length > 0) {
 				this.drawInfoText("Peak time: " + Math.round(this.peakTime()*100)/100, 2);
 				this.drawInfoText("Peak height: " + Math.round(this.peakHeight()*100)/100, 3);
+				this.drawInfoText("Distance traveled: " + Math.round((this.positionAtTime(this.simTime).x-this.physicsObjects[0].initialPos.x)*100)/100, 4);
 			}
 		}
 	}
