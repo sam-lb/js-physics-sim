@@ -78,6 +78,7 @@ class Projectile extends PhysicsObject {
 		this.radius = radius;
 		this.diameter = 2 * this.radius;
 		this.col = col;
+		this.points = [];
 	}
 
 	resetInitials(initialPos, initialVel) {
@@ -85,6 +86,7 @@ class Projectile extends PhysicsObject {
 		this.initialVel = initialVel.copy();
 		this.setPosition(initialPos.copy());
 		this.setVelocity(initialVel.copy());
+		this.points = [];
 	}
 
 	checkBounds() {
@@ -101,11 +103,25 @@ class Projectile extends PhysicsObject {
 		push();
 		fill(this.col.x, this.col.y, this.col.z);
 		circle(coords.x, coords.y, this.sim.scaleMeterQuantity(this.diameter));
+		this.points.push(coords);
+
+		strokeWeight(1);
+		stroke(255,0,0);
+		if (this.points.length > 1) {
+			let pos1, pos2;
+			for (let i=1; i<this.points.length; i++) {
+				pos1 = this.sim.transformCoordinates(this.points[i-1]);
+				pos2 = this.sim.transformCoordinates(this.points[i]);
+				line(this.points[i-1].x, this.points[i-1].y, this.points[i].x, this.points[i].y);
+			}
+		}
+
 		pop();
 	}
 
 	update() {
 		this.applyForce(createVector(0, -constants.g));
+		// this.applyForce(p5.Vector.mult(this.vel, -3/4)) /* Air resistance */
 		super.update();
 		this.checkBounds();
 		this.draw();
