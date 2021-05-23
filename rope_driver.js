@@ -164,7 +164,32 @@ class RopeNode extends PhysicsObject {
 }
 
 
-let simulation, projectile;
+function dragObject() {
+  const mousePos = simulation.reverseCoordinates(createVector(mouseX, mouseY));
+
+  if (nearestObj === null) {
+    nearestObj = simulation.physicsObjects[0];
+    let minDist = dist(nearestObj.pos.x, nearestObj.pos.y, mousePos.x, mousePos.y), distance;
+    for (let pObj of simulation.physicsObjects) {
+      distance = dist(pObj.pos.x, pObj.pos.y, mousePos.x, mousePos.y);
+      if (distance < minDist) {
+        minDist = distance;
+        nearestObj = pObj;
+      }
+    }
+  }
+  const force = p5.Vector.sub(mousePos, nearestObj.pos);
+  force.normalize();
+  force.mult(15000*nearestObj.mass);
+  nearestObj.applyForce(force);
+}
+
+function mouseReleased() {
+  nearestObj = null;
+}
+
+
+let simulation, projectile, nearestObj = null;
 function setup() {
 	const canvas = createCanvas(windowWidth/2, windowHeight);
 	canvas.parent("canvas-div");
@@ -176,12 +201,7 @@ function setup() {
 
 function draw() {
   if (mouseIsPressed) {
-    const obj = simulation.physicsObjects[simulation.physicsObjects.length-1];
-    const mousePos = simulation.reverseCoordinates(createVector(mouseX, mouseY));
-    const force = p5.Vector.sub(mousePos, obj.pos);
-    force.normalize();
-    force.mult(5000*obj.mass);
-    obj.applyForce(force);
+    dragObject();
   }
 	simulation.update();
 }
