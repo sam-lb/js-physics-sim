@@ -34,6 +34,7 @@ class BaseSimulation {
     this.paused = false;
     this.gridlines = false;
     this.showSimTime = true;
+    this.clearOnUpdate = true;
     this.physicsObjects = [];
   }
 
@@ -80,6 +81,10 @@ class BaseSimulation {
     this.showSimTime = !this.showSimTime;
   }
 
+  toggleClearOnUpdate() {
+    this.clearOnUpdate = !this.clearOnUpdate;
+  }
+
   addPhysicsObject(physicsObject) {
     /* Add a physics object to the simulation */
     this.physicsObjects.push(physicsObject);
@@ -88,6 +93,10 @@ class BaseSimulation {
   transformCoordinates(point) {
     /* Convert point in meter space to pixels */
     return createVector(point.x * this.pixelsPerMeter, this.canvasHeight - point.y * this.pixelsPerMeter);
+  }
+
+  reverseCoordinates(point) {
+    return createVector(point.x / this.pixelsPerMeter, (this.canvasHeight - point.y) / this.pixelsPerMeter);
   }
 
   scaleMeterQuantity(quantity) {
@@ -125,7 +134,7 @@ class BaseSimulation {
   update() {
     /* Do a single simulation step */
     if (!this.paused) {
-      clear();
+      if (this.clearOnUpdate) clear();
       if (this.gridlines) this.drawGridlines();
       for (let obj of this.physicsObjects) {
         obj.update();
@@ -177,7 +186,6 @@ class PhysicsObject {
   }
 
   update() {
-    this.vel.y = min(this.vel.y, 1000);
     this.vel.add(p5.Vector.mult(this.acc, this.sim.timeStep));
     this.pos.add(p5.Vector.mult(this.vel, this.sim.timeStep));
     this.acc.set(0, 0, 0);

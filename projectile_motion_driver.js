@@ -135,7 +135,7 @@ function startSim() {
 	const initialHeight = parseInt(document.getElementById("initial-height-slider").value);
 	simulation.reset(createVector(2, initialHeight), createVector(xVel, yVel));
 
-	const minPixelsPerMeter = Math.min(width/(simulation.peakHeight()+2), height/(simulation.endRange()+2));
+	const minPixelsPerMeter = Math.min(height/(simulation.peakHeight()+2), width/(simulation.endRange()+2));
 	simulation.setPixelsPerMeter(minPixelsPerMeter);
 }
 
