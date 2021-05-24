@@ -47,6 +47,7 @@ class ClothSimulation extends BaseSimulation {
     this.linkStrength = linkStrength;
     this.nodeMass = nodeMass;
     this.links = [];
+    this.polygons = [];
     this.generateLinks();
   }
 
@@ -65,24 +66,43 @@ class ClothSimulation extends BaseSimulation {
 
 
 
-    let node1, node2, node3;
+    let node1, node2, node3, node4;
     for (let i=0; i<this.nodeCount-1; i++) {
       for (let j=0; j<this.nodeCount-1; j++) {
         node1 = this.physicsObjects[j+i*this.nodeCount];
         node2 = this.physicsObjects[1+j+i*this.nodeCount];
         node3 = this.physicsObjects[j+(i+1)*this.nodeCount];
+        node4 = this.physicsObjects[1+j+(i+1)*this.nodeCount];
         this.links.push(new RopeLink(this, node1, node2, this.linkLength, this.linkStrength));
         this.links.push(new RopeLink(this, node1, node3, this.linkLength, this.linkStrength));
 
         if (i === this.nodeCount-2) {
-          this.links.push(new RopeLink(this, node3, this.physicsObjects[1+j+(i+1)*this.nodeCount], this.linkLength, this.linkStrength));
+          this.links.push(new RopeLink(this, node3, node4, this.linkLength, this.linkStrength));
         }
 
         if (j === this.nodeCount-2) {
-          this.links.push(new RopeLink(this, node2, this.physicsObjects[1+j+(i+1)*this.nodeCount], this.linkLength, this.linkStrength));
+          this.links.push(new RopeLink(this, node2, node4, this.linkLength, this.linkStrength));
         }
+
+        this.polygons.push({nodes: [node1, node2, node4, node3], i: i, j: j});
       }
     }
+  }
+
+  drawPolygon(polygon) {
+    const col = ((polygon.i + polygon.j) % 2 === 0) ? createVector(255,0,0) : createVector(255,255,200);
+    let pixelPos;
+    push();
+    beginShape();
+    fill(col.x, col.y, col.z);
+    strokeWeight(1);
+    stroke(200);
+    for (let node of polygon.nodes) {
+      pixelPos = this.transformCoordinates(node.pos);
+      vertex(pixelPos.x, pixelPos.y);
+    }
+    endShape(CLOSE);
+    pop();
   }
 
   update() {
@@ -90,6 +110,9 @@ class ClothSimulation extends BaseSimulation {
       clear();
       for (let link of this.links) {
         link.update();
+      }
+      for (let polygon of this.polygons) {
+        this.drawPolygon(polygon);
       }
       super.update();
     }
@@ -123,9 +146,14 @@ class RopeLink {
     const mag = force.mag();
     const displacement = mag - this.restLength;
     force.mult(this.springConstant * displacement / mag);
+
+    if (displacement > 0) {
+      force.mult(8);
+    }
+
     this.node1.applyForce(force);
     this.node2.applyForce(p5.Vector.mult(force, -1));
-    this.draw();
+    //this.draw();
   }
 
 }
@@ -145,6 +173,10 @@ class RopeNode extends PhysicsObject {
     this.fixed = !this.fixed;
   }
 
+  toggleVisible() {
+    this.visible = !this.visible;
+  }
+
   draw() {
     const pos = this.sim.transformCoordinates(this.pos);
     push();
@@ -157,7 +189,13 @@ class RopeNode extends PhysicsObject {
 
   update() {
     this.applyForce(createVector(0, -constants.g));
-    if (!this.fixed) super.update();
+    if (!this.fixed) {
+      super.update();
+      /*if (this.vel.mag() > 15) {
+        this.vel.setMag(15);
+      }*/
+      this.vel.mult(0.995);
+    }
     if (this.visible) this.draw();
   }
 
@@ -177,6 +215,7 @@ function dragObject() {
         nearestObj = pObj;
       }
     }
+    nearestObj.toggleVisible();
   }
   const force = p5.Vector.sub(mousePos, nearestObj.pos);
   force.normalize();
@@ -185,6 +224,7 @@ function dragObject() {
 }
 
 function mouseReleased() {
+  if (nearestObj !== null) nearestObj.toggleVisible();
   nearestObj = null;
 }
 
@@ -194,7 +234,7 @@ function setup() {
 	const canvas = createCanvas(windowWidth/2, windowHeight);
 	canvas.parent("canvas-div");
 	//simulation = new RopeSimulation(width, height, 50, 1/10, 1000, 1/10, 10, 1/600); // width, height, #nodes, restLength, k, mass, pixperm, timestep
-  simulation = new ClothSimulation(width, height, 20, 1, 1000, 1/10, 10, 1/300); // width, height, #nodes, restLength, k, mass, pixperm, timestep
+  simulation = new ClothSimulation(width, height, 20, 1, 1000, 1/10, 10, 1/400); // width, height, #nodes, restLength, k, mass, pixperm, timestep
   simulation.toggleClearOnUpdate();
   //simulation.toggleGridlines();
 }

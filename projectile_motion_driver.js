@@ -121,7 +121,7 @@ class Projectile extends PhysicsObject {
 
 	update() {
 		this.applyForce(createVector(0, -constants.g));
-		// this.applyForce(p5.Vector.mult(this.vel, -3/4)) /* Air resistance */
+		// this.applyForce(p5.Vector.mult(this.vel, -1/2)) /* Air resistance */
 		super.update();
 		this.checkBounds();
 		this.draw();
